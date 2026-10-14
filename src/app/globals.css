@@ -2,50 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light theme only, matching the product's colours (navy #1e3a5f, orange accent). */
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    color-scheme: light;
+    --background: 0 0% 100%;
+    --foreground: 215 40% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 201 96% 32%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 201 96% 32%;
+    --card-foreground: 215 40% 13%;
+    --primary: 211 52% 24%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 33% 96%;
+    --secondary-foreground: 215 40% 13%;
+    --muted: 210 33% 96%;
+    --muted-foreground: 215 19% 35%;
+    --accent: 24 85% 40%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 42%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 60% 26%;
+    --border: 214 25% 86%;
+    --input: 214 20% 70%;
+    --ring: 211 70% 40%;
     --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 201 96% 32%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 201 96% 32%;
   }
 }
 
@@ -53,12 +32,56 @@
   * {
     @apply border-border;
   }
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  /* Anchored sections stop below the sticky header. */
+  [id] {
+    scroll-margin-top: 5rem;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2;
   }
 }
 
-.gradient-text {
-  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
+/* Long legal texts. */
+.legal h2 {
+  @apply mt-10 mb-3 text-xl font-semibold text-foreground;
+}
+.legal h3 {
+  @apply mt-6 mb-2 text-base font-semibold text-foreground;
+}
+.legal p,
+.legal li {
+  @apply leading-relaxed text-foreground/90;
+}
+.legal p {
+  @apply mb-3;
+}
+.legal ul {
+  @apply mb-4 list-disc space-y-1 pl-6;
+}
+.legal a {
+  @apply text-primary underline underline-offset-2;
+}
+.legal table {
+  @apply w-full text-left text-sm;
+}
+.legal th,
+.legal td {
+  @apply border-b border-border py-2 pr-4 align-top;
+}
+.placeholder-todo {
+  @apply rounded bg-amber-100 px-1 font-medium text-amber-900;
+}
