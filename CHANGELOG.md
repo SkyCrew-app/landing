@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/SkyCrew-app/landing/compare/0.2.0...0.3.0) (2026-10-14)
+
+
+### Features
+
+* **offer:** :sparkles: honest offer with two plans, Stripe subscription and legal pages ([#7](https://github.com/SkyCrew-app/landing/issues/7)) ([84349c8](https://github.com/SkyCrew-app/landing/commit/84349c8e3e515774b035ece5ffb18e85b5bd9f96))
+
 ## [0.2.0](https://github.com/SkyCrew-app/landing/compare/0.1.0...0.2.0) (2026-10-09)
 
 
