@@ -1,10 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import type { Dictionary } from '@/i18n'
 import { HONEYPOT_FIELD } from '@/lib/schemas'
+
+export type FormTexts = Dictionary['forms']
+
+/** Texts shared by every field of a form ("(facultatif)", the honeypot label), in the page's language. */
+const FormTextsContext = createContext<FormTexts | null>(null)
+export const FormTextsProvider = FormTextsContext.Provider
+
+function useFormTexts(): FormTexts {
+  const texts = useContext(FormTextsContext)
+  if (!texts) throw new Error('Form fields must be rendered inside <FormTextsProvider>')
+  return texts
+}
 
 type Common = {
   id: string
@@ -36,6 +49,7 @@ function FieldText({ id, error, hint }: { id: string; error?: string; hint?: str
 }
 
 function LabelText({ label, required }: { label: string; required?: boolean }) {
+  const t = useFormTexts()
   return (
     <>
       {label}
@@ -45,7 +59,7 @@ function LabelText({ label, required }: { label: string; required?: boolean }) {
           *
         </span>
       ) : (
-        <span className="font-normal text-muted-foreground"> (facultatif)</span>
+        <span className="font-normal text-muted-foreground"> {t.optional}</span>
       )}
     </>
   )
@@ -142,10 +156,11 @@ export function CheckboxField({
 
 /** Field hidden from people (and from assistive technologies); bots tend to fill it in. */
 export function Honeypot({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const t = useFormTexts()
   return (
     <div aria-hidden="true" className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden">
       <label>
-        Site web
+        {t.honeypot}
         <input
           type="text"
           name={HONEYPOT_FIELD}
@@ -188,15 +203,18 @@ export interface PostResult {
   data: Record<string, unknown>
 }
 
-/** POSTs JSON and keeps track of the request state and of the per-field errors returned by the server. */
-export function usePost() {
+/**
+ * POSTs JSON and keeps track of the request state and of the per-field errors returned by the server.
+ * `?lang=` tells the API route which language to answer in.
+ */
+export function usePost(t: FormTexts, lang: string) {
   const [state, setState] = useState<SendState>({ status: 'idle' })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   async function post(url: string, payload: unknown): Promise<PostResult | null> {
     setState({ status: 'sending' })
     try {
-      const response = await fetch(url, {
+      const response = await fetch(`${url}?lang=${lang}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -210,12 +228,12 @@ export function usePost() {
       setErrors((data.errors as Record<string, string>) ?? {})
       setState({
         status: 'error',
-        message: typeof data.message === 'string' ? data.message : 'L’envoi a échoué. Réessayez dans quelques minutes.',
+        message: typeof data.message === 'string' ? data.message : t.failed,
         code: typeof data.code === 'string' ? data.code : undefined,
       })
       return { ok: false, status: response.status, data }
     } catch {
-      setState({ status: 'error', message: 'Connexion impossible. Vérifiez votre accès à Internet et réessayez.' })
+      setState({ status: 'error', message: t.offline })
       return null
     }
   }

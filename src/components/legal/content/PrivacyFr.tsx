@@ -1,13 +1,8 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Fill, LegalPage, ScrollTable } from '@/components/legal/LegalPage'
 import { LEGAL } from '@/config/legal'
-
-export const metadata: Metadata = {
-  title: 'Confidentialité et cookies',
-  description: 'Comment SkyCrew traite les données personnelles du site et de l’application, et quels cookies sont utilisés.',
-  alternates: { canonical: '/confidentialite' },
-}
+import { getDictionary } from '@/i18n'
+import { pathOf } from '@/i18n/routes'
 
 const PROCESSORS: { name: string; role: string; data: string; where: string }[] = [
   { name: `${LEGAL.host.name}`, role: 'Hébergement du site, de l’application et de sa base de données', data: 'Toutes les données de l’application', where: LEGAL.host.location },
@@ -23,9 +18,10 @@ const PROCESSORS: { name: string; role: string; data: string; where: string }[] 
   { name: 'YouTube (Google), mode « youtube-nocookie »', role: 'Lecture des vidéos intégrées aux cours en ligne', data: 'Adresse IP, données techniques, lecture de la vidéo', where: 'États-Unis' },
 ]
 
-export default function Confidentialite() {
+/** French original (the version that prevails). */
+export function PrivacyFr() {
   return (
-    <LegalPage title="Confidentialité et cookies">
+    <LegalPage lang="fr" title={getDictionary('fr').meta.privacy.title} frenchHref={pathOf('fr', 'privacy')}>
       <p>
         Cette page explique quelles données personnelles sont traitées par ce site et par l’application SkyCrew, par
         qui, pourquoi et combien de temps, et comment exercer vos droits.

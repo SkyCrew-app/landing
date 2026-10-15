@@ -44,6 +44,19 @@ describe('buildCheckoutParams', () => {
     expect(params.success_url).toBe('https://site.test/commencer/merci?session_id={CHECKOUT_SESSION_ID}')
     expect(params.cancel_url).toBe('https://site.test/commencer/annule')
     expect(params.automatic_tax).toBeUndefined()
+    expect(params.locale).toBe('fr')
+    expect(params.metadata?.language).toBe('fr')
+    expect(flat.price_data?.product_data?.name).toBe('SkyCrew Club – abonnement annuel')
+  })
+
+  it('follows the visitor’s language: Stripe page, line names and return pages', () => {
+    const params = buildCheckoutParams({ ...input, tier: 'club-ecole', cycle: 'monthly' }, 'https://site.test', {}, new Date(), 'en')
+    expect(params.locale).toBe('en')
+    expect(params.success_url).toBe('https://site.test/en/get-started/thank-you?session_id={CHECKOUT_SESSION_ID}')
+    expect(params.cancel_url).toBe('https://site.test/en/get-started/cancelled')
+    expect(params.line_items![0].price_data?.product_data?.name).toBe('SkyCrew Club + School – monthly subscription')
+    expect(params.line_items![1].price_data?.product_data?.name).toBe('SkyCrew Club + School – aircraft (monthly)')
+    expect(params.metadata?.language).toBe('en')
   })
 
   it('uses Stripe Price ids and tax settings from the environment when present', () => {
@@ -79,7 +92,7 @@ describe('Stripe webhook', () => {
         amount_subtotal: 39000,
         amount_total: 46800,
         customer_details: { email: 'jeanne@example.org' },
-        metadata: { tier: 'club', cycle: 'yearly', aircraft: '5', club_name: 'Aéroclub de test', contact_name: 'Jeanne Pilote', contact_email: 'jeanne@example.org' },
+        metadata: { language: 'en', tier: 'club', cycle: 'yearly', aircraft: '5', club_name: 'Aéroclub de test', contact_name: 'Jeanne Pilote', contact_email: 'jeanne@example.org' },
       },
     },
   }
@@ -95,6 +108,7 @@ describe('Stripe webhook', () => {
     expect(message.title).toMatch(/Nouvel abonnement/)
     expect(message.fields).toContainEqual(['Club', 'Aéroclub de test'])
     expect(message.fields).toContainEqual(['Avions', '5'])
+    expect(message.fields).toContainEqual(['Langue du visiteur', 'anglais'])
   })
 
   it('refuses a wrong signature, a tampered body and a missing header', async () => {

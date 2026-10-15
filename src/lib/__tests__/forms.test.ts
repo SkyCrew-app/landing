@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { formatMessage, notifyOwner } from '@/lib/notify'
 import { rateLimit, resetRateLimit } from '@/lib/rate-limit'
-import { checkoutSchema, setupRequestSchema } from '@/lib/schemas'
+import { schemasFor } from '@/lib/schemas-by-lang'
+
+const { checkout: checkoutSchema, setupRequest: setupRequestSchema } = schemasFor('fr')
 
 describe('rateLimit', () => {
   beforeEach(() => resetRateLimit())

@@ -1,7 +1,7 @@
 /**
  * Facts about the publisher that only the owner knows. Every value that still starts with
- * "[À COMPLÉTER" is shown as is on the legal pages (mentions légales, CGV, confidentialité)
- * and must be filled in before the site takes real subscriptions.
+ * "[À COMPLÉTER" (or "[TO COMPLETE" in LEGAL_EN_TEXT, below) is shown as is, highlighted, on the
+ * legal pages of both languages and must be filled in before the site takes real subscriptions.
  *
  * TODO (owner): fill in every field below, then rebuild and redeploy.
  */
@@ -41,6 +41,42 @@ export const LEGAL = {
   effectiveDate: todo('date d’entrée en vigueur des CGV et des tarifs'),
 } as const
 
+const todoEn = (what: string) => `[TO COMPLETE: ${what}]`
+
+/**
+ * The same facts for the English legal pages, only where the value is a sentence or a word that
+ * needs translating; everything else (names, numbers, addresses) is taken from LEGAL.
+ *
+ * TODO (owner): fill these in too, in English.
+ */
+export const LEGAL_EN_TEXT = {
+  hostLocation: todoEn('country where the servers are located (e.g. France)'),
+  emailProvider: todoEn('e-mail sending provider (e.g. Brevo, Mailjet…) and country'),
+  notificationChannel: todoEn('tool receiving the site’s messages (e.g. Discord, United States) and/or mailbox'),
+  logRetention: todoEn('retention period of the server’s technical logs (e.g. 12 months)'),
+  backups: todoEn('backup frequency and retention (e.g. daily, kept for 14 days)'),
+  support: todoEn('support terms (channel, business days, indicative response time)'),
+  court: todoEn('competent court (e.g. Tribunal de commerce de …)'),
+  effectiveDate: todoEn('effective date of the terms of sale and prices'),
+}
+
+/** Publisher facts for the legal pages of a language. */
+export function legalFor(lang: 'fr' | 'en') {
+  if (lang === 'fr') return LEGAL
+  const en = LEGAL_EN_TEXT
+  return {
+    ...LEGAL,
+    host: { ...LEGAL.host, location: en.hostLocation },
+    emailProvider: en.emailProvider,
+    notificationChannel: en.notificationChannel,
+    logRetention: en.logRetention,
+    backups: en.backups,
+    support: en.support,
+    court: en.court,
+    effectiveDate: en.effectiveDate,
+  }
+}
+
 export function isPlaceholder(value: string): boolean {
-  return value.startsWith('[À COMPLÉTER')
+  return value.startsWith('[À COMPLÉTER') || value.startsWith('[TO COMPLETE')
 }
