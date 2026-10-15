@@ -1,4 +1,5 @@
 import { OFFER, type BillingCycle, type Tier } from '@/config/offer'
+import { LOCALES, type Lang } from '@/i18n/config'
 
 export interface PriceBreakdown {
   /** Flat part for the chosen period, excluding VAT, in cents. */
@@ -36,10 +37,10 @@ export function computePrice(tier: Tier, aircraftCount: number, cycle: BillingCy
   }
 }
 
-/** "39 €" or "1 234,50 €" in French formatting. */
-export function formatEuros(cents: number): string {
+/** "39 €" or "1 234,50 €" in French, "€39" or "€1,234.50" in English. */
+export function formatEuros(cents: number, lang: Lang = 'fr'): string {
   const whole = cents % 100 === 0
-  return new Intl.NumberFormat('fr-FR', {
+  return new Intl.NumberFormat(LOCALES[lang].intl, {
     style: 'currency',
     currency: OFFER.currency.toUpperCase(),
     minimumFractionDigits: whole ? 0 : 2,

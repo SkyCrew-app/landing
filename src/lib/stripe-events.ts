@@ -1,5 +1,8 @@
 import type Stripe from 'stripe'
 import { getTier } from '@/config/offer'
+import { isLang } from '@/i18n/config'
+import { getDictionary } from '@/i18n'
+import { VISITOR_LANGUAGE } from '@/lib/visitor-language'
 import { formatEuros } from '@/lib/pricing'
 import type { OwnerMessage } from '@/lib/notify'
 
@@ -12,7 +15,12 @@ export const HANDLED_EVENTS = [
   'invoice.payment_failed',
 ] as const
 
-const tierName = (id?: string | null) => (id && getTier(id)?.name) || id || '—'
+// Notifications go to the owner, in French.
+const tierName = (id?: string | null) => {
+  const tier = id ? getTier(id) : undefined
+  return tier ? getDictionary('fr').tiers[tier.id].name : id || '—'
+}
+const languageName = (code?: string | null) => (isLang(code) ? VISITOR_LANGUAGE[code] : undefined)
 const cycleName = (cycle?: string | null) => (cycle === 'yearly' ? 'annuel' : cycle === 'monthly' ? 'mensuel' : cycle || '—')
 const date = (unix?: number | null) =>
   unix ? new Date(unix * 1000).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }) : undefined
@@ -51,6 +59,7 @@ export function describeEvent(event: Stripe.Event): OwnerMessage | null {
           ['Montant HT de la période', session.amount_subtotal != null ? formatEuros(session.amount_subtotal) : undefined],
           ['Montant TTC de la période', session.amount_total != null ? formatEuros(session.amount_total) : undefined],
           ['CGV acceptées le', m.cgv_accepted_at],
+          ['Langue du visiteur', languageName(m.language)],
           ['Abonnement', idOf(session.subscription) ? dashboard(event.livemode, `subscriptions/${idOf(session.subscription)}`) : undefined],
           ['Mode', event.livemode ? 'réel' : 'test'],
         ],
@@ -87,6 +96,7 @@ export function describeEvent(event: Stripe.Event): OwnerMessage | null {
           ['Fin de l’essai', date(sub.trial_end)],
           ['Prend fin le', date(sub.cancel_at ?? sub.ended_at)],
           ['Contact', m.contact_email],
+          ['Langue du client', languageName(m.language)],
           ['Abonnement', dashboard(event.livemode, `subscriptions/${sub.id}`)],
           ['Mode', event.livemode ? 'réel' : 'test'],
         ],

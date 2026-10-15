@@ -3,6 +3,8 @@
 import { useId } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { OFFER, TIERS, type BillingCycle, type TierId } from '@/config/offer'
+import { fmt } from '@/i18n/fmt'
+import type { OfferTexts } from '@/i18n/slices'
 import { computePrice, formatEuros, normalizeAircraft } from '@/lib/pricing'
 import { cn } from '@/lib/utils'
 
@@ -19,22 +21,26 @@ const optionClass =
 export function OfferControls({
   value,
   onChange,
+  texts,
   maxAircraft = 500,
   errors = {},
 }: {
   value: OfferChoice
   onChange: (next: OfferChoice) => void
+  texts: OfferTexts
   maxAircraft?: number
   errors?: Record<string, string>
 }) {
   const id = useId()
+  const t = texts.offer
+  const euros = (cents: number) => formatEuros(cents, texts.lang)
   const set = (patch: Partial<OfferChoice>) => onChange({ ...value, ...patch })
   const setAircraft = (n: number) => set({ aircraft: Math.min(maxAircraft, normalizeAircraft(n)) })
 
   return (
     <div className="space-y-6">
       <fieldset>
-        <legend className="mb-3 font-semibold">Offre</legend>
+        <legend className="mb-3 font-semibold">{t.tierLegend}</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {TIERS.map((tier) => (
             <label key={tier.id} className={optionClass}>
@@ -47,9 +53,9 @@ export function OfferControls({
                 className="mt-1 h-4 w-4 accent-[hsl(var(--primary))]"
               />
               <span>
-                <span className="block font-semibold">{tier.name}</span>
+                <span className="block font-semibold">{texts.tierNames[tier.id]}</span>
                 <span className="block text-sm text-muted-foreground">
-                  {formatEuros(tier.monthlyFlatCents)} HT / mois + {formatEuros(tier.monthlyPerAircraftCents)} HT par avion
+                  {fmt(t.tierPrice, { flat: euros(tier.monthlyFlatCents), perAircraft: euros(tier.monthlyPerAircraftCents) })}
                 </span>
               </span>
             </label>
@@ -59,7 +65,7 @@ export function OfferControls({
 
       <div>
         <label htmlFor={`${id}-aircraft`} className="mb-3 block font-semibold">
-          Nombre d’avions
+          {t.aircraftLabel}
         </label>
         <div className="flex items-center gap-2">
           <button
@@ -67,7 +73,7 @@ export function OfferControls({
             className="flex h-11 w-11 items-center justify-center rounded-md border border-input bg-white hover:bg-secondary disabled:opacity-50"
             onClick={() => setAircraft(value.aircraft - 1)}
             disabled={value.aircraft <= OFFER.minAircraft}
-            aria-label="Un avion de moins"
+            aria-label={t.fewer}
           >
             <Minus className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -89,7 +95,7 @@ export function OfferControls({
             className="flex h-11 w-11 items-center justify-center rounded-md border border-input bg-white hover:bg-secondary disabled:opacity-50"
             onClick={() => setAircraft(value.aircraft + 1)}
             disabled={value.aircraft >= maxAircraft}
-            aria-label="Un avion de plus"
+            aria-label={t.more}
           >
             <Plus className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -102,12 +108,12 @@ export function OfferControls({
       </div>
 
       <fieldset>
-        <legend className="mb-3 font-semibold">Facturation</legend>
+        <legend className="mb-3 font-semibold">{t.billingLegend}</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {(
             [
-              ['monthly', 'Mensuelle', 'Sans engagement au-delà du mois en cours'],
-              ['yearly', 'Annuelle', `${12 - OFFER.monthsBilledPerYear} mois offerts`],
+              ['monthly', t.monthly, t.monthlyHint],
+              ['yearly', t.yearly, fmt(t.yearlyHint, { months: 12 - OFFER.monthsBilledPerYear })],
             ] as const
           ).map(([cycle, label, hint]) => (
             <label key={cycle} className={optionClass}>
@@ -132,23 +138,26 @@ export function OfferControls({
 }
 
 /** Total for the chosen period, computed from src/config/offer.ts only. */
-export function PriceSummary({ value, className }: { value: OfferChoice; className?: string }) {
-  const tier = TIERS.find((t) => t.id === value.tier)!
+export function PriceSummary({ value, texts, className }: { value: OfferChoice; texts: OfferTexts; className?: string }) {
+  const t = texts.offer
+  const euros = (cents: number) => formatEuros(cents, texts.lang)
+  const tier = TIERS.find((item) => item.id === value.tier)!
   const price = computePrice(tier, value.aircraft, value.cycle)
-  const per = value.cycle === 'yearly' ? 'an' : 'mois'
+  const yearly = value.cycle === 'yearly'
+  const aircraft = fmt(price.aircraft > 1 ? t.aircraftMany : t.aircraftOne, { count: price.aircraft })
   return (
     <div className={cn('rounded-lg bg-primary p-5 text-primary-foreground', className)} aria-live="polite">
       <p className="text-sm opacity-90">
-        {tier.name}, {price.aircraft} avion{price.aircraft > 1 ? 's' : ''}, facturation {value.cycle === 'yearly' ? 'annuelle' : 'mensuelle'}
+        {fmt(t.summary, { tier: texts.tierNames[tier.id], aircraft, cycle: yearly ? t.cycleYearly : t.cycleMonthly })}
       </p>
       <p className="mt-1 text-3xl font-bold">
-        {formatEuros(price.totalCents)} <span className="text-base font-medium">HT / {per}</span>
+        {euros(price.totalCents)} <span className="text-base font-medium">{yearly ? t.perYear : t.perMonth}</span>
       </p>
       <p className="mt-1 text-sm opacity-90">
-        {formatEuros(price.flatCents)} + {price.aircraft} × {formatEuros(price.perAircraftCents)}
-        {value.cycle === 'yearly' && <> · soit {formatEuros(price.monthlyEquivalentCents)} HT par mois</>}
+        {euros(price.flatCents)} + {price.aircraft} × {euros(price.perAircraftCents)}
+        {yearly && <> · {fmt(t.monthlyEquivalent, { price: euros(price.monthlyEquivalentCents) })}</>}
       </p>
-      <p className="mt-3 text-xs opacity-90">{OFFER.vatMention}</p>
+      <p className="mt-3 text-xs opacity-90">{texts.vatMention}</p>
     </div>
   )
 }

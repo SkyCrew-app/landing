@@ -9,8 +9,31 @@ de contact et pages légales.
 1. **Prix** : `src/config/offer.ts` (offres, forfait, prix par avion, essai, mention de TVA). Les montants
    actuels sont provisoires.
 2. **Informations légales** : `src/config/legal.ts`. Chaque valeur `[À COMPLÉTER : …]` s’affiche telle quelle,
-   surlignée, sur `/mentions-legales`, `/cgv` et `/confidentialite`.
+   surlignée, sur `/mentions-legales`, `/cgv` et `/confidentialite` et leurs versions anglaises ; les valeurs
+   rédigées (sauvegardes, support, durées…) sont aussi à remplir en anglais dans `LEGAL_EN_TEXT` (`[TO COMPLETE: …]`).
 3. **Variables d’environnement** : voir `.env.example` et ci-dessous.
+
+## Langues
+
+Le français reste la langue par défaut, à ses adresses habituelles ; l’anglais est sous `/en` :
+
+| Français | Anglais |
+|---|---|
+| `/` | `/en` |
+| `/commencer` (`/merci`, `/annule`) | `/en/get-started` (`/thank-you`, `/cancelled`) |
+| `/mentions-legales` | `/en/legal-notice` |
+| `/cgv` | `/en/terms` |
+| `/confidentialite` | `/en/privacy` |
+
+- Les textes sont dans `src/i18n/fr.ts` et `src/i18n/en.ts` (mêmes clés, vérifiées par un test). Les pages
+  légales sont des documents à part : `src/components/legal/content/` (la version anglaise renvoie à la française,
+  qui fait foi).
+- Les adresses de chaque page dans les deux langues sont dans `src/i18n/routes.ts` : le sélecteur FR / EN de l’en-tête,
+  les liens `hreflang`, les URL canoniques et le sitemap s’en servent.
+- Aucune redirection selon la langue du navigateur : une adresse affiche toujours la même page.
+- Les formulaires envoient `?lang=` aux routes `/api/*`, qui répondent dans cette langue ; Stripe Checkout s’ouvre
+  dans la langue du visiteur et y revient. Les notifications au propriétaire restent en français et indiquent
+  « Langue du visiteur ».
 
 ## Développement
 
@@ -111,5 +134,6 @@ place » et crée l’espace du club à la main.
 ## Captures d’écran
 
 Les images de `public/screens/` sont des captures de l’application avec les données de démonstration
-(thème clair, ordinateur 1440 × 900 et téléphone 390 × 844). Les refaire quand les écrans changent, et
-mettre à jour `src/lib/screens.ts` si les noms changent.
+(thème clair, ordinateur 1440 × 900 et téléphone 390 × 844), en français et, avec le suffixe `-en`, avec
+l’application passée en anglais pour les pages anglaises. Les refaire quand les écrans changent, et mettre à jour
+`src/lib/screens.ts` si les noms changent. L’image de partage anglaise est `src/app/en/opengraph-image.png`.
