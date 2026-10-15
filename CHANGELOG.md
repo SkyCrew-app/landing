@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/SkyCrew-app/landing/compare/0.3.0...0.4.0) (2026-10-15)
+
+
+### Features
+
+* **i18n:** :globe_with_meridians: English version of the site under /en ([#11](https://github.com/SkyCrew-app/landing/issues/11)) ([23ff7ef](https://github.com/SkyCrew-app/landing/commit/23ff7efe33e08a724e3821852e6d30c28d00724a))
+
 ## [0.3.0](https://github.com/SkyCrew-app/landing/compare/0.2.0...0.3.0) (2026-10-14)
 
 
