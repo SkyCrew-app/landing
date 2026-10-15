@@ -1,17 +1,13 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Fill, LegalPage } from '@/components/legal/LegalPage'
 import { LEGAL } from '@/config/legal'
+import { getDictionary } from '@/i18n'
+import { pathOf } from '@/i18n/routes'
 
-export const metadata: Metadata = {
-  title: 'Mentions légales',
-  description: 'Éditeur, hébergeur et informations légales du site SkyCrew.',
-  alternates: { canonical: '/mentions-legales' },
-}
-
-export default function MentionsLegales() {
+/** French original (the version that prevails). */
+export function LegalNoticeFr() {
   return (
-    <LegalPage title="Mentions légales">
+    <LegalPage lang="fr" title={getDictionary('fr').meta.legalNotice.title} frenchHref={pathOf('fr', 'legalNotice')}>
       <h2>Éditeur du site</h2>
       <p>
         Le site et le service SkyCrew sont édités par <Fill>{LEGAL.companyName}</Fill>, <Fill>{LEGAL.legalForm}</Fill>,

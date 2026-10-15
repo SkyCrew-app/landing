@@ -1,19 +1,15 @@
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Fill, LegalPage, ScrollTable } from '@/components/legal/LegalPage'
 import { LEGAL } from '@/config/legal'
+import { getDictionary } from '@/i18n'
+import { pathOf } from '@/i18n/routes'
 import { OFFER, TIERS } from '@/config/offer'
 import { formatEuros } from '@/lib/pricing'
 
-export const metadata: Metadata = {
-  title: 'Conditions générales de vente',
-  description: 'Conditions générales de vente de l’abonnement SkyCrew pour les aéroclubs.',
-  alternates: { canonical: '/cgv' },
-}
-
-export default function Cgv() {
+/** French original (the version that prevails). */
+export function TermsFr() {
   return (
-    <LegalPage title="Conditions générales de vente">
+    <LegalPage lang="fr" title={getDictionary('fr').meta.terms.title} frenchHref={pathOf('fr', 'terms')}>
       <h2>1. Objet</h2>
       <p>
         Les présentes conditions générales de vente (CGV) régissent l’abonnement au service en ligne SkyCrew, logiciel de
@@ -68,7 +64,7 @@ export default function Cgv() {
         <tbody>
           {TIERS.map((tier) => (
             <tr key={tier.id}>
-              <td>{tier.name}</td>
+              <td>{getDictionary('fr').tiers[tier.id].name}</td>
               <td>{formatEuros(tier.monthlyFlatCents)}</td>
               <td>{formatEuros(tier.monthlyPerAircraftCents)}</td>
             </tr>

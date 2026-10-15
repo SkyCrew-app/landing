@@ -1,79 +1,91 @@
 import { z } from 'zod'
 import { OFFER, TIER_IDS } from '@/config/offer'
+import { fmt } from '@/i18n/fmt'
+import type { Dictionary } from '@/i18n'
 
-/** Validation shared by the forms (client) and the API routes (server). */
-
-const trimmed = (min: number, max: number, label: string) =>
-  z
-    .string({ required_error: `${label} est obligatoire.`, invalid_type_error: `${label} est invalide.` })
-    .trim()
-    .min(min, min <= 1 ? `${label} est obligatoire.` : `${label} doit contenir au moins ${min} caractères.`)
-    .max(max, `${label} ne doit pas dépasser ${max} caractères.`)
-
-const email = z
-  .string({ required_error: 'L’adresse e-mail est obligatoire.' })
-  .trim()
-  .max(254, 'L’adresse e-mail est trop longue.')
-  .email('Saisissez une adresse e-mail valide.')
-
-const phone = z
-  .string()
-  .trim()
-  .max(30, 'Le numéro de téléphone est trop long.')
-  .regex(/^[+0-9 ().-]*$/, 'Le numéro de téléphone ne doit contenir que des chiffres, espaces et + . - ( ).')
-  .optional()
-  .or(z.literal(''))
-
-const aircraft = (max: number) =>
-  z.coerce
-    .number({ invalid_type_error: 'Indiquez un nombre d’avions.' })
-    .int('Indiquez un nombre entier d’avions.')
-    .min(OFFER.minAircraft, `Au moins ${OFFER.minAircraft} avion.`)
-    .max(max, `Au-delà de ${max} avions, écrivez-nous.`)
-
-const tier = z.enum(TIER_IDS, { errorMap: () => ({ message: 'Choisissez une offre.' }) })
-const cycle = z.enum(['monthly', 'yearly'], { errorMap: () => ({ message: 'Choisissez mensuel ou annuel.' }) })
+/**
+ * Validation shared by the forms (client) and the API routes (server). The messages come from the
+ * `validation` part of a dictionary: the forms pass the slice of their page's language (so the
+ * browser does not download every dictionary), the API routes use `schemasFor(lang)`
+ * (src/lib/schemas-by-lang.ts).
+ */
 
 /** Hidden field: humans leave it empty, many bots fill it in. */
 export const HONEYPOT_FIELD = 'website'
 
-export const contactSchema = z.object({
-  name: trimmed(2, 100, 'Le nom'),
-  email,
-  clubName: z.string().trim().max(120, 'Le nom du club est trop long.').optional().or(z.literal('')),
-  message: trimmed(10, 5000, 'Le message'),
-})
+const MESSAGE_MAX = 5000
 
-export const setupRequestSchema = z.object({
-  clubName: trimmed(2, 120, 'Le nom du club'),
-  contactName: trimmed(2, 100, 'Le nom du contact'),
-  email,
-  phone,
-  aircraft: aircraft(500),
-  tier,
-  cycle,
-  message: z.string().trim().max(5000, 'Le message ne doit pas dépasser 5000 caractères.').optional().or(z.literal('')),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'Cochez la case pour que nous puissions vous recontacter.' }),
-  }),
-})
+export function buildSchemas(t: Dictionary['validation']) {
+  const trimmed = (min: number, max: number, label: string) =>
+    z
+      .string({ required_error: fmt(t.required, { label }), invalid_type_error: fmt(t.invalid, { label }) })
+      .trim()
+      .min(min, min <= 1 ? fmt(t.required, { label }) : fmt(t.min, { label, min }))
+      .max(max, fmt(t.max, { label, max }))
 
-export const checkoutSchema = z.object({
-  clubName: trimmed(2, 120, 'Le nom du club'),
-  contactName: trimmed(2, 100, 'Le nom du contact'),
-  email,
-  phone,
-  aircraft: aircraft(OFFER.maxAircraftOnline),
-  tier,
-  cycle,
-  acceptCgv: z.literal(true, {
-    errorMap: () => ({ message: 'Acceptez les conditions générales de vente pour continuer.' }),
-  }),
-})
+  const email = z
+    .string({ required_error: t.emailRequired, invalid_type_error: t.emailInvalid })
+    .trim()
+    .max(254, t.emailTooLong)
+    .email(t.emailInvalid)
 
-export type ContactInput = z.infer<typeof contactSchema>
-export type SetupRequestInput = z.infer<typeof setupRequestSchema>
-export type CheckoutInput = z.infer<typeof checkoutSchema>
+  const phone = z
+    .string()
+    .trim()
+    .max(30, t.phoneTooLong)
+    .regex(/^[+0-9 ().-]*$/, t.phoneChars)
+    .optional()
+    .or(z.literal(''))
+
+  const aircraft = (max: number) =>
+    z.coerce
+      .number({ invalid_type_error: t.aircraftNumber })
+      .int(t.aircraftInteger)
+      .min(OFFER.minAircraft, fmt(t.aircraftMin, { min: OFFER.minAircraft }))
+      .max(max, fmt(t.aircraftMax, { max }))
+
+  const tier = z.enum(TIER_IDS, { errorMap: () => ({ message: t.tier }) })
+  const cycle = z.enum(['monthly', 'yearly'], { errorMap: () => ({ message: t.cycle }) })
+  const message = z.string().trim().max(MESSAGE_MAX, fmt(t.messageTooLong, { max: MESSAGE_MAX })).optional().or(z.literal(''))
+
+  const contact = z.object({
+    name: trimmed(2, 100, t.labels.name),
+    email,
+    clubName: z.string().trim().max(120, t.clubNameTooLong).optional().or(z.literal('')),
+    message: trimmed(10, MESSAGE_MAX, t.labels.message),
+  })
+
+  const setupRequest = z.object({
+    clubName: trimmed(2, 120, t.labels.clubName),
+    contactName: trimmed(2, 100, t.labels.contactName),
+    email,
+    phone,
+    aircraft: aircraft(500),
+    tier,
+    cycle,
+    message,
+    consent: z.literal(true, { errorMap: () => ({ message: t.consent }) }),
+  })
+
+  const checkout = z.object({
+    clubName: trimmed(2, 120, t.labels.clubName),
+    contactName: trimmed(2, 100, t.labels.contactName),
+    email,
+    phone,
+    aircraft: aircraft(OFFER.maxAircraftOnline),
+    tier,
+    cycle,
+    acceptCgv: z.literal(true, { errorMap: () => ({ message: t.acceptCgv }) }),
+  })
+
+  return { contact, setupRequest, checkout }
+}
+
+export type Schemas = ReturnType<typeof buildSchemas>
+
+export type ContactInput = z.infer<Schemas['contact']>
+export type SetupRequestInput = z.infer<Schemas['setupRequest']>
+export type CheckoutInput = z.infer<Schemas['checkout']>
 
 /** First error message of each field, for display next to the field. */
 export function fieldErrors(error: z.ZodError): Record<string, string> {

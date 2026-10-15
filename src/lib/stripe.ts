@@ -1,5 +1,8 @@
 import Stripe from 'stripe'
 import { OFFER, getTier, type BillingCycle, type TierId } from '@/config/offer'
+import { DEFAULT_LANG, LOCALES, type Lang } from '@/i18n/config'
+import { fmt, getDictionary } from '@/i18n'
+import { pathOf } from '@/i18n/routes'
 import { computePrice } from '@/lib/pricing'
 import type { CheckoutInput } from '@/lib/schemas'
 
@@ -33,8 +36,9 @@ export function priceEnvName(tier: TierId, cycle: BillingCycle, part: 'FLAT' | '
 }
 
 /** Metadata copied on the Checkout session and on the subscription. */
-export function checkoutMetadata(input: CheckoutInput, acceptedAt: string): Record<string, string> {
+export function checkoutMetadata(input: CheckoutInput, acceptedAt: string, lang: Lang = DEFAULT_LANG): Record<string, string> {
   return {
+    language: lang,
     tier: input.tier,
     cycle: input.cycle,
     aircraft: String(input.aircraft),
@@ -50,20 +54,23 @@ export function checkoutMetadata(input: CheckoutInput, acceptedAt: string): Reco
  * Checkout session parameters: a subscription with two recurring lines, the flat fee
  * (quantity 1) and the per-aircraft fee (quantity = number of aircraft). Each line uses the
  * Stripe Price id from the environment when there is one, or else an inline price computed
- * from src/config/offer.ts.
+ * from src/config/offer.ts. The Stripe page, the line names and the return pages follow the
+ * visitor's language.
  */
 export function buildCheckoutParams(
   input: CheckoutInput,
   origin: string,
   env: Env = process.env,
   now = new Date(),
+  lang: Lang = DEFAULT_LANG,
 ): Stripe.Checkout.SessionCreateParams {
   const tier = getTier(input.tier)
   if (!tier) throw new Error(`Unknown tier ${input.tier}`)
+  const t = getDictionary(lang)
   const price = computePrice(tier, input.aircraft, input.cycle)
   const interval = input.cycle === 'yearly' ? 'year' : 'month'
   const taxRates = env.STRIPE_TAX_RATE_ID ? [env.STRIPE_TAX_RATE_ID] : undefined
-  const period = input.cycle === 'yearly' ? 'annuel' : 'mensuel'
+  const names = { tier: t.tiers[tier.id].name, period: input.cycle === 'yearly' ? t.stripe.yearly : t.stripe.monthly }
 
   const line = (
     part: 'FLAT' | 'AIRCRAFT',
@@ -87,24 +94,24 @@ export function buildCheckoutParams(
     return taxRates ? { ...base, tax_rates: taxRates } : base
   }
 
-  const metadata = checkoutMetadata(input, now.toISOString())
+  const metadata = checkoutMetadata(input, now.toISOString(), lang)
   const params: Stripe.Checkout.SessionCreateParams = {
     mode: 'subscription',
-    locale: 'fr',
+    locale: LOCALES[lang].stripe,
     customer_email: input.email,
     billing_address_collection: 'required',
     tax_id_collection: { enabled: true },
     line_items: [
-      line('FLAT', `SkyCrew ${tier.name} – abonnement ${period}`, price.flatCents, 1),
-      line('AIRCRAFT', `SkyCrew ${tier.name} – avion (${period})`, price.perAircraftCents, price.aircraft),
+      line('FLAT', fmt(t.stripe.flatLine, names), price.flatCents, 1),
+      line('AIRCRAFT', fmt(t.stripe.aircraftLine, names), price.perAircraftCents, price.aircraft),
     ],
     metadata,
     subscription_data: {
       metadata,
       ...(OFFER.trialDays > 0 ? { trial_period_days: OFFER.trialDays } : {}),
     },
-    success_url: `${origin}/commencer/merci?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/commencer/annule`,
+    success_url: `${origin}${pathOf(lang, 'startThanks')}?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}${pathOf(lang, 'startCancelled')}`,
   }
   if (env.STRIPE_AUTOMATIC_TAX === 'true') params.automatic_tax = { enabled: true }
   return params

@@ -42,4 +42,8 @@ describe('formatEuros', () => {
     expect(formatEuros(3900).replace(/\s/g, ' ')).toBe('39 €')
     expect(formatEuros(123450).replace(/\s/g, ' ')).toBe('1 234,50 €')
   })
+  it('formats in English for the English pages', () => {
+    expect(formatEuros(3900, 'en')).toBe('€39')
+    expect(formatEuros(123450, 'en')).toBe('€1,234.50')
+  })
 })

@@ -5,17 +5,18 @@ import { Hero } from '@/components/home/Hero'
 import { HowItWorks } from '@/components/home/HowItWorks'
 import { Mobile } from '@/components/home/Mobile'
 import { Pricing } from '@/components/home/Pricing'
+import type { Lang } from '@/i18n/config'
 
-export default function Home() {
+export function HomePage({ lang }: { lang: Lang }) {
   return (
     <>
-      <Hero />
-      <Features />
-      <Mobile />
-      <HowItWorks />
-      <Pricing />
-      <Faq />
-      <Contact />
+      <Hero lang={lang} />
+      <Features lang={lang} />
+      <Mobile lang={lang} />
+      <HowItWorks lang={lang} />
+      <Pricing lang={lang} />
+      <Faq lang={lang} />
+      <Contact lang={lang} />
     </>
   )
 }
