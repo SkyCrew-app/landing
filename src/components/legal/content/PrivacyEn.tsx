@@ -97,6 +97,27 @@ export function PrivacyEn() {
         preferences, log of administrators’ actions, and login data. This data is kept for the duration of the club’s
         subscription, then returned and deleted as set out in the <Link href={pathOf('en', 'terms')}>terms of sale</Link>.
       </p>
+      <p>
+        <strong>Sign-in log.</strong> Every attempt to sign in to the application, successful or not, and every sign-out
+        are recorded in a log:
+      </p>
+      <ul>
+        <li>
+          <strong>Data</strong>: the account concerned (or, when no account matches, the e-mail address typed), date and
+          time, IP address, device (browser, operating system, type of device) and result of the attempt. Never the
+          password or the two-factor code typed.
+        </li>
+        <li>
+          <strong>Purpose</strong>: the security of the accounts (spotting a suspicious sign-in or repeated attempts). The
+          club’s administrators read the log; each member sees their own recent sign-ins in their profile.
+        </li>
+        <li>
+          <strong>Legal basis</strong>: legitimate interest (security of the service).
+        </li>
+        <li>
+          <strong>Retention</strong>: 6 months, then deleted automatically.
+        </li>
+      </ul>
       <p>Each club has its own space, separate from those of other clubs.</p>
 
       <h2>4. Processors and third-party services</h2>
