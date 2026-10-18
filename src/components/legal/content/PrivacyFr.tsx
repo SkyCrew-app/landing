@@ -97,6 +97,28 @@ export function PrivacyFr() {
         notifications, préférences, journal des actions des administrateurs, et données de connexion. Ces données sont conservées pendant l’abonnement du club, puis restituées et
         supprimées comme prévu dans les <Link href="/cgv">conditions générales de vente</Link>.
       </p>
+      <p>
+        <strong>Journal des connexions.</strong> Chaque tentative de connexion à l’application, réussie ou non, et chaque
+        déconnexion sont enregistrées dans un journal :
+      </p>
+      <ul>
+        <li>
+          <strong>Données</strong> : compte concerné (ou, si aucun compte ne correspond, l’adresse e-mail saisie), date et
+          heure, adresse IP, appareil (navigateur, système, type d’appareil) et résultat de la tentative. Jamais le mot de
+          passe ni le code de double authentification saisis.
+        </li>
+        <li>
+          <strong>Finalité</strong> : la sécurité des comptes (repérer une connexion suspecte ou des tentatives répétées).
+          Les administrateurs du club consultent le journal ; chaque membre voit ses propres dernières connexions dans son
+          profil.
+        </li>
+        <li>
+          <strong>Base légale</strong> : intérêt légitime (sécurité du service).
+        </li>
+        <li>
+          <strong>Durée</strong> : 6 mois, puis suppression automatique.
+        </li>
+      </ul>
       <p>Chaque club dispose de son propre espace, séparé de ceux des autres clubs.</p>
 
       <h2>4. Sous-traitants et services tiers</h2>
