@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/SkyCrew-app/landing/compare/0.4.0...0.5.0) (2026-10-18)
+
+
+### Features
+
+* **security:** :sparkles: describe the sign-in log in the privacy policy ([#15](https://github.com/SkyCrew-app/landing/issues/15)) ([5708e6a](https://github.com/SkyCrew-app/landing/commit/5708e6a5389fa54d10fc30253b7738c84532a89d))
+
 ## [0.4.0](https://github.com/SkyCrew-app/landing/compare/0.3.0...0.4.0) (2026-10-15)
 
 
